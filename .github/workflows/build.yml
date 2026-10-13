@@ -1,0 +1,10 @@
+name: build
+on: [pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ros:jazzy
+    steps:
+      - uses: actions/checkout@v4
+      - run: apt-get update && rosdep update && rosdep install --from-paths src --ignore-src -y
+      - run: . /opt/ros/jazzy/setup.sh && colcon build
