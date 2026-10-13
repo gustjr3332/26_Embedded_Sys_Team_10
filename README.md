@@ -4,7 +4,7 @@ ROS 2 Jazzy · WSL2 Ubuntu 24.04 · TurtleBot3 Burger (Gazebo Harmonic)
 
 ## 시작
 ```bash
-git clone <이 레포 URL> ~/tb3 && cd ~/tb3
+git clone https://github.com/gustjr3332/26_Embedded_Sys_Team_10.git ~/tb3 && cd ~/tb3
 source scripts/env.sh
 colcon build
 ```
