@@ -2,11 +2,13 @@
 <package format="3">
   <name>tb3_team10</name>
   <version>0.1.0</version>
-  <description>TurtleBot3 Burger 팀 launch 모음 (시뮬레이션, 실물 bringup)</description>
+  <description>TurtleBot3 Burger 팀 launch 모음 (시뮬레이션, 실물 bringup, SLAM, Nav2)</description>
   <maintainer email="113328716+gustjr3332@users.noreply.github.com">gustjr3332</maintainer>
   <license>Apache-2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>turtlebot3_bringup</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>
+  <exec_depend>turtlebot3_cartographer</exec_depend>
+  <exec_depend>turtlebot3_navigation2</exec_depend>
   <export><build_type>ament_cmake</build_type></export>
 </package>

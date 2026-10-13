@@ -238,8 +238,8 @@ ros2 launch tb3_team10 robot.launch.py   # 실물 bringup, SBC에서 실행
 | 0 시뮬레이션 | `ros2 launch tb3_team10 sim.launch.py`로 Gazebo에서 전체 흐름 익히기 | 아래 체크리스트 시뮬레이션 항목 완료 | |
 | 1 Bringup | SBC에서 `ros2 launch tb3_team10 robot.launch.py`(내부에서 `turtlebot3_bringup` 실행) | Remote PC `ros2 topic list`에 `/scan`, `/odom`, `/imu`, `/battery_state`, `/tf`가 보인다 | |
 | 2 텔레옵 | Remote PC에서 `ros2 run turtlebot3_teleop teleop_keyboard` | 바닥에서 전진, 후진, 회전이 되고 `s`나 스페이스로 바로 멈춘다 | |
-| 3 SLAM | Remote PC에서 `ros2 launch turtlebot3_cartographer cartographer.launch.py` 후 텔레옵으로 지도 작성 | `ros2 run nav2_map_server map_saver_cli -f ~/map`으로 `map.pgm`, `map.yaml`이 생기고 RViz에서 벽이 겹치지 않는다. 쓸 지도는 레포 `maps/`에 복사 | |
-| 4 Nav2 | `ros2 launch turtlebot3_navigation2 navigation2.launch.py map:=$HOME/map.yaml` | 2D Pose Estimate 후 스캔이 지도와 겹치고, Navigation2 Goal로 찍은 곳까지 부딪히지 않고 간다 | |
+| 3 SLAM | Remote PC에서 `ros2 launch tb3_team10 slam.launch.py` 후 텔레옵으로 지도 작성 | `ros2 run nav2_map_server map_saver_cli -f ~/map`으로 `map.pgm`, `map.yaml`이 생기고 RViz에서 벽이 겹치지 않는다. 쓸 지도는 레포 `src/tb3_team10/maps/`에 복사 | |
+| 4 Nav2 | `ros2 launch tb3_team10 nav.launch.py map:=$HOME/map.yaml` (`map` 생략 시 팀 지도) | 2D Pose Estimate 후 스캔이 지도와 겹치고, Navigation2 Goal로 찍은 곳까지 부딪히지 않고 간다 | |
 | 5 팀 과제 | 과제 코드를 `src/tb3_team10`에 추가 | `colcon build`가 경고 없이 끝나고, `/cmd_vel`을 쓰는 노드는 `TwistStamped`로 퍼블리시하며, 시뮬레이션에서 먼저 동작을 확인한 뒤 실물에서 돌린다. 과제 내용이 정해지면 이 칸을 구체화 | |
 
 실물 단계에서는 `use_sim_time`을 붙이지 않는다. 시뮬레이션 launch에는 모두 `use_sim_time:=True`를 붙인다.
