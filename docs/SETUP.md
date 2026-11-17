@@ -9,7 +9,7 @@
 | 제어 보드 | OpenCR 1.0, DYNAMIXEL XL430 2개 |
 | SBC | Raspberry Pi 4, Ubuntu Server 24.04 LTS 64-bit, ROS 2 Jazzy ros-base |
 | Remote PC | WSL2 Ubuntu 24.04, ROS 2 Jazzy desktop |
-| 네트워크 | `ROS_DOMAIN_ID=30`, `RMW_IMPLEMENTATION=rmw_fastrtps_cpp` |
+| 네트워크 | `ROS_DOMAIN_ID=25`, `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` |
 | 속도 명령 | `/cmd_vel`은 `geometry_msgs/TwistStamped` (Jazzy부터) |
 
 참고 자료
@@ -44,7 +44,7 @@
 상자를 열면 공식 PDF 마지막의 Parts List와 대조한다. 큰 부품만 먼저 센다.
 
 - DYNAMIXEL XL430 2개, DYNAMIXEL to OpenCR 케이블 2개
-- OpenCR 1.0 1개, Raspberry Pi 1개, USB2LDS 보드 1개, 360 Laser Distance Sensor(LDS-02) 1개와 LDS 케이블
+- OpenCR 1.0 1개, Raspberry Pi 1개, USB2LDS 보드 1개, 360 Laser Distance Sensor(LDS-02, LD08) 1개와 LDS 케이블
 - USB 케이블 2개, Raspberry Pi 전원 케이블 1개, Li-Po 배터리 연장 케이블 1개
 - Li-Po 배터리, 충전기 LBC-010, SMPS(12V 어댑터), AC 코드
 - Waffle-Plate 8장, 바퀴와 타이어 각 2개, 볼 캐스터 1개, 브래킷 5개
@@ -54,26 +54,90 @@
 
 ## A2. 조립 순서
 
-1층
-- 볼 캐스터를 1층 플레이트 아래쪽에 단다.
-- Plate_Support M3×35mm 4개를 세운다.
-- 타이어를 바퀴에 끼우고, 바퀴를 DYNAMIXEL에 M2×4mm 나사로 고정한다.
-- DYNAMIXEL 두 개를 1층에 올린다. PDF 그림의 ID 1, ID 2 위치와 바퀴 방향을 반드시 맞춘다. 좌우가 바뀌면 나중에 SW1 테스트에서 로봇이 엉뚱하게 돈다.
-- 직각 브래킷으로 배터리 자리를 만들고 DYNAMIXEL 사이에 Li-Po 배터리를 놓는다.
+공식 PDF의 Assembly Manual(9~26쪽) 그림 순서와 같다. 로봇은 4개 층을 위로 쌓아 만든다. 한 층은 Waffle-Plate 2장을 겹친 것이다.
 
-2층
-- 이 층의 나사는 플레이트 아래쪽에서 넣는다. 나사 끝이 배터리를 긁지 않게 하려는 것이다.
-- PCB Support를 달기 전에 DYNAMIXEL 케이블을 케이블 통로로 먼저 뺀다.
-- OpenCR을 PCB Support에 올리고 2층을 1층 위에 얹은 뒤, 위에서 T2.6×12mm 나사로 DYNAMIXEL을 고정한다.
+| 층 | 들어가는 것 |
+|---|---|
+| 1층 | 바퀴 모터(DYNAMIXEL) 2개, 바퀴, 배터리, 볼 캐스터 |
+| 2층 | OpenCR(모터를 움직이는 제어 보드) |
+| 3층 | 라즈베리파이(로봇의 컴퓨터), USB2LDS |
+| 4층 | LDS-02(주변 거리를 재는 센서) |
 
-3층
-- M2.5 너트를 PCB Support 홈에 끼운 채 라즈베리파이 자리를 잡는다.
-- USB 케이블과 라즈베리파이 전원 케이블을 각자 통로로 뺀 다음 라즈베리파이를 올린다.
-- USB2LDS와 Adapter Plate를 리벳으로 고정한다.
+이름이 낯선 부품은 이렇게 부른다.
 
-4층
-- LDS 케이블을 통로로 뺀 뒤 Spacer 위에 LDS를 M2.5×16mm 나사로 올린다.
-- 4층을 3층 위에 얹는다.
+| 이름 | 쉬운 설명 |
+|---|---|
+| Waffle-Plate | 구멍이 촘촘히 뚫린 판. 한 층에 2장씩 쓴다 |
+| Plate_Support | 층과 층 사이를 받치는 기둥 (1층은 35mm, 나머지는 45mm) |
+| PCB Support | 보드를 판에서 띄워 주는 작은 받침 |
+| Rivet | 누르면 박히는 플라스틱 못. 나사 대신 쓴다 |
+| Cable Passage | 판에 난 케이블 통로. 층을 얹기 전에 케이블을 먼저 빼 둔다 |
+
+### 시작 전에
+
+1. 층마다 부품 목록 그림이 나온다. 그 층 부품만 꺼내 따로 놓고 시작한다.
+2. 나사 이름은 `PH_M3×8mm_K`처럼 "모양_굵기×길이"다. 굵기(M2, M2.5, M3)와 길이를 PDF 그림과 맞춰 본다. 헷갈리면 PDF 마지막 장의 1:1 도안에 대 본다.
+3. Waffle-Plate 2장을 겹쳐 한 층으로 만든다. 이때 쓰는 나사는 `PH_M3×8mm_K`, 너트는 `NUT_M3`다.
+   - 1, 3, 4층은 나사를 판 위쪽에서 넣는다.
+   - 2층만 나사를 판 아래쪽에서 넣는다. 나사 끝이 배터리를 긁지 않게 하려는 것이다.
+
+### 1층: 바퀴와 배터리
+
+이 층 부품: M2×4mm 8개, T2×6mm 4개, T2.6×12mm 8개, M3×8mm 8개, 너트 M3 4개, Plate_Support 35mm 4개, 브래킷 5개, 리벳 10개.
+
+1. 볼 캐스터(앞뒤 균형을 잡는 작은 바퀴)를 1층 판의 아래쪽에 달고 `PH_T2×6mm_K`로 고정한다.
+2. Plate_Support 35mm 4개를 `PH_M3×8mm_K`로 판에 세운다.
+3. 타이어를 바퀴에 끼운다.
+4. 바퀴를 DYNAMIXEL에 `PH_M2×4mm_K`로 고정한다.
+5. 직각 브래킷으로 배터리 자리를 만든다. 배터리가 흔들리지 않게 잡아 주는 틀이다.
+6. DYNAMIXEL 2개를 1층 판에 올리고 DYNAMIXEL to OpenCR 케이블을 각각 꽂는다.
+   - PDF 그림의 ID 1, ID 2 위치와 바퀴 방향을 그대로 맞춘다. 좌우가 바뀌면 SW1 테스트에서 로봇이 엉뚱하게 돈다.
+7. Li-Po 배터리를 두 DYNAMIXEL 사이에 놓는다.
+
+### 2층: OpenCR
+
+이 층 부품: PCB Support 4개, M2.5×8mm 4개, M3×8mm 12개, 너트 M2.5 4개, 너트 M3 4개, T2.6×12mm 8개, Plate_Support 45mm 4개, 리벳 4개, 배터리 연장 케이블 1개.
+
+1. 1층에서 꽂은 DYNAMIXEL 케이블 2개를 2층 판의 케이블 통로로 먼저 뺀다. PCB Support를 단 뒤에는 빼기 어렵다.
+2. OpenCR용 PCB Support 4개를 판에 단다. PDF가 권하는 나사 위치 그림을 따른다.
+3. OpenCR을 PCB Support 위에 올린다.
+4. Plate_Support 45mm 4개를 세우고 2층을 1층 위에 얹는다.
+5. 2층 위쪽에서 `PH_T2.6×12mm_K`로 DYNAMIXEL을 고정한다.
+
+### 3층: 라즈베리파이
+
+이 층 부품: PCB Support 4개, M2.5×8mm 8개, M3×8mm 14개, 너트 M2.5 8개, 너트 M3 4개, Plate_Support 45mm 6개, 리벳 2개, USB 케이블 2개, 라즈베리파이 전원 케이블 1개, USB2LDS 1개, Adapter Plate 1개.
+
+1. 너트 M2.5를 라즈베리파이용 PCB Support의 홈에 끼운다.
+2. USB 케이블과 라즈베리파이 전원 케이블을 각자 맞는 통로로 먼저 뺀다.
+3. PCB Support 위치를 맞춰 판에 단다.
+4. 라즈베리파이를 PCB Support 위에 올린다.
+5. USB2LDS와 Adapter Plate를 리벳으로 판에 고정한다.
+6. 케이블을 꽂는다.
+   - OpenCR과 라즈베리파이를 USB 케이블로 잇는다.
+   - 라즈베리파이 전원 케이블을 라즈베리파이 GPIO에 꽂는다. PIN 4가 +, PIN 6이 −다. 거꾸로 꽂으면 안 된다.
+   - 라즈베리파이와 USB2LDS를 USB 케이블로 잇는다.
+7. 3층을 2층 위에 얹는다.
+
+### 4층: LDS-02
+
+이 층 부품: PCB Support 3개, M2.5×8mm 3개, M2.5×16mm 3개, M3×8mm 10개, 너트 M2.5 6개, 너트 M3 4개, Spacer 3개, LDS 케이블 1개.
+
+1. 너트 M2.5를 LDS용 PCB Support의 홈에 끼운다.
+2. LDS 케이블을 통로로 먼저 뺀다.
+3. PCB Support 위치를 맞춰 판에 단다.
+4. PCB Support 위에 Spacer를 놓고, 그 위에 LDS를 `PH_M2.5×16mm_K`로 올려 고정한다.
+5. 4층을 3층 위에 얹는다.
+6. LDS 케이블을 3층의 USB2LDS에 꽂는다.
+
+### 끝나고 확인
+
+- 나사나 부품이 남지 않았는가. 층마다 남은 개수가 있으면 어디선가 빠진 것이다.
+- 바퀴 좌우(ID 1, ID 2)가 PDF 그림과 같은가.
+- 케이블이 바퀴나 판 사이에 끼지 않았는가.
+- 라즈베리파이 전원 케이블이 PIN 4(+), PIN 6(−)에 맞는가.
+
+배선 확인은 A3, 배터리 준비는 A4로 이어진다.
 
 ## A3. 배선
 
@@ -110,7 +174,6 @@ sudo apt install -y ros-jazzy-hls-lfcd-lds-driver ros-jazzy-turtlebot3-msgs \
 mkdir -p ~/turtlebot3_ws/src && cd ~/turtlebot3_ws/src
 git clone -b jazzy https://github.com/ROBOTIS-GIT/turtlebot3.git
 git clone -b jazzy https://github.com/ROBOTIS-GIT/ld08_driver.git
-git clone -b jazzy https://github.com/ROBOTIS-GIT/coin_d4_driver
 cd ~/turtlebot3_ws/src/turtlebot3 && rm -r turtlebot3_cartographer turtlebot3_navigation2
 cd ~/turtlebot3_ws && colcon build --symlink-install --parallel-workers 1
 ```
@@ -119,19 +182,22 @@ cd ~/turtlebot3_ws && colcon build --symlink-install --parallel-workers 1
 
 ```bash
 sudo cp `ros2 pkg prefix turtlebot3_bringup`/share/turtlebot3_bringup/script/99-turtlebot3-cdc.rules /etc/udev/rules.d/
+sudo sed -i 's/^ATTRS{idVendor}=="10c4"/KERNEL=="ttyUSB*", &/' /etc/udev/rules.d/99-turtlebot3-cdc.rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
+
+두 번째 줄은 `/dev/tb3_lidar`가 `ttyUSB0`가 아니라 `bus/usb/...`에 붙어서 라이다 포트가 안 열리는 문제를 막는다.
 
 6. SBC `~/.bashrc`:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 source ~/turtlebot3_ws/install/setup.bash
-export ROS_DOMAIN_ID=30 #TURTLEBOT3
+export ROS_DOMAIN_ID=25 #TURTLEBOT3
 export TURTLEBOT3_MODEL=burger
 export LDS_MODEL=LDS-02
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
 ## A6. OpenCR 펌웨어 업로드
@@ -195,9 +261,9 @@ echo 'source ~/turtlebot3_ws/install/setup.bash' >> ~/.bashrc
 `~/.bashrc`:
 
 ```bash
-export ROS_DOMAIN_ID=30
+export ROS_DOMAIN_ID=25
 export TURTLEBOT3_MODEL=burger
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
 실물 연동 전 Windows `C:\Users\gustj\.wslconfig`:
@@ -264,18 +330,18 @@ ros2 launch tb3_team10 robot.launch.py   # 실물 bringup, SBC에서 실행
 지도 재현: Gazebo → `cartographer.launch.py use_sim_time:=True` → `python3 ~/workspace/wander.py 300` → `map_saver_cli -f ~/workspace/map`
 
 ### 조립 (A)
-- [ ] 부품 확인 (A1)
-- [ ] 1층부터 4층까지 조립 (A2)
-- [ ] 배선 점검, 특히 라즈베리파이 전원 핀 (A3)
-- [ ] 배터리 충전 확인 (A4)
-- [ ] microSD에 Ubuntu Server 24.04 설치, Wi-Fi·SSH 설정 (A5)
-- [ ] SBC 패키지 설치·빌드, udev 규칙, `LDS_MODEL` (A5)
-- [ ] OpenCR 펌웨어 업로드 (A6)
-- [ ] SW1 전진 30cm, SW2 180도 회전 (A7)
+- [x] 부품 확인 (A1)
+- [x] 1층부터 4층까지 조립 (A2)
+- [x] 배선 점검, 특히 라즈베리파이 전원 핀 (A3)
+- [x] 배터리 충전 확인 (A4)
+- [x] microSD에 Ubuntu Server 24.04 설치, Wi-Fi·SSH 설정 (A5)
+- [x] SBC 패키지 설치·빌드, udev 규칙, `LDS_MODEL` (A5)
+- [x] OpenCR 펌웨어 업로드 (A6)
+- [x] SW1 전진 30cm, SW2 180도 회전 (A7)
 
 ### 실물 개발 (B)
-- [ ] WSL mirrored 모드 전환
-- [ ] 1 Bringup: PC에서 `/scan`, `/odom` 확인
+- [x] WSL mirrored 모드 전환
+- [x] 1 Bringup: PC에서 `/scan`, `/odom` 확인 (2026-11-17, Cyclone 유니캐스트 피어 필요)
 - [ ] 2 텔레옵
 - [ ] 3 SLAM 지도 저장
 - [ ] 4 Nav2 목표 도착
@@ -295,7 +361,7 @@ ros2 launch tb3_team10 robot.launch.py   # 실물 bringup, SBC에서 실행
 
 - SBC에 `python3-argcomplete`, `libboost-system-dev`, `build-essential`을 추가했고, clone 후 `turtlebot3_cartographer`, `turtlebot3_navigation2`를 지우는 단계와 `--symlink-install`을 넣었다.
 - SBC OS를 Ubuntu Server 24.04.2 LTS 64-bit로 구체화하고, 2GB 모델 스왑 안내와 udev 규칙 명령을 추가했다.
-- Remote PC와 SBC 모두에 `RMW_IMPLEMENTATION=rmw_fastrtps_cpp`를 추가했다. 기존 문서에는 없었다.
+- Remote PC와 SBC 모두에 `RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`를 추가했다. 기존 문서에는 없었다.
 - e-Manual은 Remote PC의 TurtleBot3를 소스(`~/turtlebot3_ws`, jazzy 브랜치)로 빌드하고 Gazebo는 OSRF 저장소의 `gz-harmonic`으로 설치한다. 우리는 apt 설치로 시뮬레이션을 이미 확인했으므로 그대로 두고, 소스 빌드는 대안으로 적었다.
 - e-Manual 지도 저장 경로는 `~/map`, 기존 시뮬레이션 기록은 `~/workspace/map`이다. 기록은 그대로 두었다.
 - 2026-10-13: 팀 패키지 `tb3_team10`을 만들어 레포 `src/`에 올렸다. 시뮬과 실물 launch를 한 곳에서 실행하기 위해서다.
